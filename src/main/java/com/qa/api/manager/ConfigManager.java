@@ -17,7 +17,7 @@ public class ConfigManager {
 		//mvn clean instal -Denv=qa
 		//mvn clean install--- by default, testcases should execute on QA ENV
 		
-	String envName=	System.getProperty("env","qa");
+	String envName=	System.getProperty("env","prod");
 		System.out.println("Running testcases on env: "+envName);
 		String fileName="config_"+envName+".properties";//config_stage.properties
 		
