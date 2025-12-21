@@ -34,12 +34,12 @@
 		</classes>
 	</test>
 
-<!-- 	<test name="Go Rest API Test - Create User with Deserialization">
+<test name="Go Rest API Test - Create User with Deserialization">
 		<classes>
 			<class
 				name="com.qa.api.gorest.tests.CreateUserWithDesrializationTest" />
 		</classes>
-	</test> -->
+	</test> 
 
 
 
