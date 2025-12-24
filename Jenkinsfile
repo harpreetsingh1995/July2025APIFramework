@@ -3,7 +3,7 @@ pipeline
     agent any
     
     tools{
-        maven 'TestMaven'
+        maven 'maven'
         }
 
     stages 
@@ -35,7 +35,7 @@ pipeline
         stage('Run Sanity API Automation Test on DEV') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/naveenanimation20/July2025APIFramework.git'
+                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
                     sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=dev"
                     
                 }
@@ -54,7 +54,7 @@ pipeline
         stage('Run Regression API Automation Tests on QA') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/naveenanimation20/July2025APIFramework.git'
+                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
                     sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_regression.xml -Denv=qa"
                     
                 }
@@ -98,7 +98,7 @@ pipeline
         stage('Sanity API Automation Test on Stage') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/naveenanimation20/July2025APIFramework.git'
+                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
                     sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=stage"
                     
                 }
@@ -128,7 +128,7 @@ pipeline
         stage('Sanity API Automation Test on PROD') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/naveenanimation20/Jan2025APIFramework.git'
+                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
                     sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=prod"
                     
                 }
