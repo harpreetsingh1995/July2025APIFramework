@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     tools {
-        // Using the tool name Jenkins recognized in your previous log
+        // Ensuring we use 'maven' as configured in your global tools
         maven 'maven' 
     }
 
@@ -10,7 +10,8 @@ pipeline {
         stage('Build Base Project') {
             steps {
                 dir('base-app') {
-                    git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+                    // This external repo still uses 'master'
+                    git branch: 'master', url: 'https://github.com/jglick/simple-maven-project-with-tests.git'
                     sh "mvn -Dmaven.test.failure.ignore=true clean package"
                 }
             }
@@ -32,7 +33,8 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     dir('api-framework') {
-                        git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
+                        // CORRECTED: Using 'main' for your specific project
+                        git branch: 'main', url: 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
                         sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=dev"
                     }
                 }
@@ -49,7 +51,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     dir('api-framework') {
-                        // Repository is already cloned, but we pull latest or ensure we are in the right place
+                        // Code is already there from the DEV stage, just run the QA suite
                         sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_regression.xml -Denv=qa"
                     }
                 }
@@ -120,7 +122,6 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     dir('api-framework') {
-                        // Corrected the URL here as well to your 2025 repo
                         sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=prod"
                     }
                 }
