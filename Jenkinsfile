@@ -1,67 +1,61 @@
-pipeline 
-{
+pipeline {
     agent any
     
-    tools{
-        maven 'maven'
-        }
+    tools {
+        // Using the tool name Jenkins recognized in your previous log
+        maven 'maven' 
+    }
 
-    stages 
-    {
-        stage('Build') 
-        {
-            steps
-            {
-                 git 'https://github.com/jglick/simple-maven-project-with-tests.git'
-                 sh "mvn -Dmaven.test.failure.ignore=true clean package"
+    stages {
+        stage('Build Base Project') {
+            steps {
+                dir('base-app') {
+                    git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+                    sh "mvn -Dmaven.test.failure.ignore=true clean package"
+                }
             }
-            post 
-            {
-                success
-                {
-                    junit '**/target/surefire-reports/TEST-*.xml'
-                    archiveArtifacts 'target/*.jar'
+            post {
+                success {
+                    junit 'base-app/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'base-app/target/*.jar'
                 }
             }
         }
         
-        
-        stage("Deploy to Dev"){
-            steps{
-                echo("deploy to Dev")
+        stage("Deploy to Dev") {
+            steps {
+                echo "Deploying to Dev Environment..."
             }
         }
         
         stage('Run Sanity API Automation Test on DEV') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
-                    sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=dev"
-                    
+                    dir('api-framework') {
+                        git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
+                        sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=dev"
+                    }
                 }
             }
         }
         
-        
-        
-        stage("Deploy to QA"){
-            steps{
-                echo("deploy to qa done")
+        stage("Deploy to QA") {
+            steps {
+                echo "Deploying to QA Environment..."
             }
         }
-          
           
         stage('Run Regression API Automation Tests on QA') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
-                    sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_regression.xml -Denv=qa"
-                    
+                    dir('api-framework') {
+                        // Repository is already cloned, but we pull latest or ensure we are in the right place
+                        sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_regression.xml -Denv=qa"
+                    }
                 }
             }
         }
                         
-     
         stage('Publish Allure Reports') {
            steps {
                 script {
@@ -70,71 +64,67 @@ pipeline
                         jdk: '',
                         properties: [],
                         reportBuildPolicy: 'ALWAYS',
-                        results: [[path: '/allure-results']]
+                        results: [[path: 'api-framework/allure-results']]
                     ])
                 }
             }
         }
         
-        
-        stage('Publish ChainTest HTML Report'){
-            steps{
-                     publishHTML([allowMissing: false,
-                                  alwaysLinkToLastBuild: false, 
-                                  keepAll: true, 
-                                  reportDir: 'target/chaintest', 
-                                  reportFiles: 'Index.html', 
-                                  reportName: 'HTML API Regression ChainTest Report on QA', 
-                                  reportTitles: 'API Test HTML Report'])
+        stage('Publish ChainTest HTML Report') {
+            steps {
+                 publishHTML([allowMissing: false,
+                              alwaysLinkToLastBuild: false, 
+                              keepAll: true, 
+                              reportDir: 'api-framework/target/chaintest', 
+                              reportFiles: 'Index.html', 
+                              reportName: 'HTML API Regression ChainTest Report on QA', 
+                              reportTitles: 'API Test HTML Report'])
             }
         }
         
-        stage("Deploy to Stage"){
-            steps{
-                echo("deploy to Stage")
+        stage("Deploy to Stage") {
+            steps {
+                echo "Deploying to Stage Environment..."
             }
         }
         
         stage('Sanity API Automation Test on Stage') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
-                    sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=stage"
-                    
+                    dir('api-framework') {
+                        sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=stage"
+                    }
                 }
             }
         }
         
-        
-        stage('Publish sanity ChainTest Report'){
-            steps{
-                     publishHTML([allowMissing: false,
-                                  alwaysLinkToLastBuild: false, 
-                                  keepAll: true, 
-                                  reportDir: 'target/chaintest', 
-                                  reportFiles: 'Index.html', 
-                                  reportName: 'HTML API Sanity ChainTest Report On Stage', 
-                                  reportTitles: ''])
+        stage('Publish sanity ChainTest Report') {
+            steps {
+                 publishHTML([allowMissing: false,
+                              alwaysLinkToLastBuild: false, 
+                              keepAll: true, 
+                              reportDir: 'api-framework/target/chaintest', 
+                              reportFiles: 'Index.html', 
+                              reportName: 'HTML API Sanity ChainTest Report On Stage', 
+                              reportTitles: ''])
             }
         }
         
-        
-        stage("Deploy to PROD"){
-            steps{
-                echo("deploy to PROD")
+        stage("Deploy to PROD") {
+            steps {
+                echo "Deploying to PROD Environment..."
             }
         }
         
         stage('Sanity API Automation Test on PROD') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/harpreetsingh1995/July2025APIFramework.git'
-                    sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=prod"
-                    
+                    dir('api-framework') {
+                        // Corrected the URL here as well to your 2025 repo
+                        sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml -Denv=prod"
+                    }
                 }
             }
         }
-        
-        
     }
 }
